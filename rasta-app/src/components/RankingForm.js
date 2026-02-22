@@ -1,39 +1,46 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
-function RankingForm({ uniqueRankingAttributes, onRankingComplete }) {
+function RankingForm({ uniqueRankingAttributes, onRankingComplete, initialPreferences }) {
   const [preferences, setPreferences] = useState({});
 
-  useEffect(() => {
-    // Initialize preferences with default values (e.g., 0 for all attributes)
-    const initialPreferences = {};
+  // Function to generate default (zero) preferences
+  const generateDefaultPreferences = useCallback(() => {
+    const defaultPrefs = {};
 
-    // Opponent preferences
-    uniqueRankingAttributes.opponents.forEach(opponent => {
-      initialPreferences[`opponent-${opponent}`] = 0;
-    });
-
-    // Location preferences
     uniqueRankingAttributes.locations.forEach(location => {
-      initialPreferences[`location-${location}`] = 0;
+      defaultPrefs[`location-${location}`] = 0;
     });
-
-    // Time bucket preferences
     uniqueRankingAttributes.timeBuckets.forEach(bucket => {
-      initialPreferences[`timeBucket-${bucket}`] = 0;
+      defaultPrefs[`timeBucket-${bucket}`] = 0;
     });
-
-    // Mid-week day game preference
-    initialPreferences['midweekDayGame-true'] = 0;
-    initialPreferences['midweekDayGame-false'] = 0;
-
-    setPreferences(initialPreferences);
+    defaultPrefs['midweekDayGame-true'] = 0;
+    defaultPrefs['midweekDayGame-false'] = 0;
+    uniqueRankingAttributes.opponents.forEach(opponent => {
+      defaultPrefs[`opponent-${opponent}`] = 0;
+    });
+    return defaultPrefs;
   }, [uniqueRankingAttributes]);
+
+  useEffect(() => {
+    // Initialize with provided initialPreferences if they exist, otherwise default to 0
+    if (initialPreferences && Object.keys(initialPreferences).length > 0) {
+      setPreferences(initialPreferences);
+    } else {
+      setPreferences(generateDefaultPreferences());
+    }
+  }, [uniqueRankingAttributes, initialPreferences, generateDefaultPreferences]); // Depend on initialPreferences and generateDefaultPreferences
 
   const handlePreferenceChange = (key, value) => {
     setPreferences(prevPreferences => ({
       ...prevPreferences,
       [key]: parseInt(value, 10), // Ensure value is a number
     }));
+  };
+
+  const handleReset = () => {
+    const defaultPrefs = generateDefaultPreferences();
+    setPreferences(defaultPrefs);
+    // onRankingComplete(defaultPrefs); // No longer notify parent on reset
   };
 
   const handleSubmit = (event) => {
@@ -43,13 +50,20 @@ function RankingForm({ uniqueRankingAttributes, onRankingComplete }) {
 
   return (
     <article>
-      <header>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3>Set Ranking Preferences</h3>
+        <button onClick={handleReset} className="secondary" style={{ width: 'auto', padding: '0.5rem' }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="1 4 1 10 7 10"></polyline>
+            <polyline points="23 20 23 14 17 14"></polyline>
+            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+          </svg>
+        </button>
       </header>
       <form onSubmit={handleSubmit}>
-        <h4 style={{ marginBottom: '1rem' }}>Locations</h4> {/* Added margin-bottom here */}
+        <h4 style={{ marginBottom: '1rem' }}>Locations</h4>
         {uniqueRankingAttributes.locations.map(location => (
-          <div key={`location-${location}`} className="grid"> {/* Removed margin-bottom */}
+          <div key={`location-${location}`} className="grid">
             <label htmlFor={`location-${location}`}>{location}</label>
             <input
               type="range"
@@ -63,9 +77,9 @@ function RankingForm({ uniqueRankingAttributes, onRankingComplete }) {
           </div>
         ))}
 
-        <h4 style={{ marginTop: '2rem', marginBottom: '1rem' }}>Game Time</h4> {/* Added margin-top and margin-bottom */}
+        <h4 style={{ marginTop: '2rem', marginBottom: '1rem' }}>Game Time</h4>
         {uniqueRankingAttributes.timeBuckets.map(bucket => (
-          <div key={`timeBucket-${bucket}`} className="grid"> {/* Removed margin-bottom */}
+          <div key={`timeBucket-${bucket}`} className="grid">
             <label htmlFor={`timeBucket-${bucket}`}>{bucket}</label>
             <input
               type="range"
@@ -79,8 +93,8 @@ function RankingForm({ uniqueRankingAttributes, onRankingComplete }) {
           </div>
         ))}
 
-        <h4 style={{ marginTop: '2rem', marginBottom: '1rem' }}>Mid-week Day Game</h4> {/* Added margin-top and margin-bottom */}
-        <div className="grid"> {/* Removed margin-bottom */}
+        <h4 style={{ marginTop: '2rem', marginBottom: '1rem' }}>Mid-week Day Game</h4>
+        <div className="grid">
           <label htmlFor="midweekDayGame-true">Yes</label>
           <input
             type="range"
@@ -92,7 +106,7 @@ function RankingForm({ uniqueRankingAttributes, onRankingComplete }) {
           />
           <span>{preferences['midweekDayGame-true'] || 0}</span>
         </div>
-        <div className="grid"> {/* Removed margin-bottom */}
+        <div className="grid">
           <label htmlFor="midweekDayGame-false">No</label>
           <input
             type="range"
@@ -105,9 +119,9 @@ function RankingForm({ uniqueRankingAttributes, onRankingComplete }) {
           <span>{preferences['midweekDayGame-false'] || 0}</span>
         </div>
 
-        <h4 style={{ marginTop: '2rem', marginBottom: '1rem' }}>Opponents</h4> {/* Added margin-top and margin-bottom */}
+        <h4 style={{ marginTop: '2rem', marginBottom: '1rem' }}>Opponents</h4>
         {uniqueRankingAttributes.opponents.map(opponent => (
-          <div key={`opponent-${opponent}`} className="grid"> {/* Removed margin-bottom */}
+          <div key={`opponent-${opponent}`} className="grid">
             <label htmlFor={`opponent-${opponent}`}>{opponent}</label>
             <input
               type="range"
@@ -121,7 +135,7 @@ function RankingForm({ uniqueRankingAttributes, onRankingComplete }) {
           </div>
         ))}
         
-        <button type="submit" style={{ marginTop: '2rem' }}>Generate Ranking</button> {/* Adjusted margin-top */}
+        <button type="submit" style={{ marginTop: '2rem' }}>Generate Ranking</button>
       </form>
     </article>
   );

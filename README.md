@@ -1,4 +1,4 @@
-# Season Ticket Ranker
+# RASTA (Rank A Season's Tickets Automatically)
 
 This project is a static single-page application (SPA) designed to help users rank their season tickets. It allows for uploading a CSV file containing game information, mapping relevant columns, and then interactively ranking games based on user-defined criteria. The application groups similar games into "series" for easier management.
 
@@ -34,11 +34,39 @@ npm start
 This will open the application in your browser at `http://localhost:3000`.
 
 ### 4. Build for Production
-To create a production-ready build:
+To create a production-ready build, which will output to the `dist` directory:
 ```bash
 npm run build
 ```
-The optimized static files will be generated in the `build` directory.
+The optimized static files will be generated in the newly created `dist` directory.
+
+## Serving the Static Build Locally
+
+After building the application, you can serve the static files locally using a simple Python HTTP server to test the production build.
+
+1.  **Navigate to the `rasta-app` directory (if not already there):**
+    ```bash
+    cd rasta-app
+    ```
+2.  **Run the Python HTTP server from the root of the `rasta-app` directory:**
+    ```bash
+    python -m http.server --port 8080
+    ```
+3.  **Open your web browser and navigate to:**
+    ```
+    http://localhost:8080/dist/
+    ```
+    You should see the production version of the RASTA application running.
+
+## Publishing to Google Cloud Storage (GCS)
+
+Once the application is built (using `npm run build`), you can publish the static files to a Google Cloud Storage bucket. Ensure you have the `gcloud` CLI and `gsutil` installed and configured.
+
+Example `gsutil` command to upload the `dist` directory:
+```bash
+gsutil -m cp -r dist/* gs://your-gcs-bucket-name/
+```
+Replace `your-gcs-bucket-name` with the actual name of your GCS bucket. The `-m` flag enables parallel (multi-threaded) copies, and `-r` specifies recursive copy for directories.
 
 ## Project Structure:
 

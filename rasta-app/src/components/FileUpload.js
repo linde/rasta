@@ -1,6 +1,8 @@
 import React, { useCallback } from 'react';
 import Papa from 'papaparse';
 
+const EXAMPLE_CSV_PATH = `${process.env.PUBLIC_URL}/GameTicketPromotionPrice.csv`;
+
 function FileUpload({ onFileUpload }) {
   const handleFileChange = useCallback((event) => {
     const file = event.target.files[0];
@@ -23,7 +25,7 @@ function FileUpload({ onFileUpload }) {
     // Prevent default form submission or navigation if inside a form
     event.preventDefault(); 
     
-    fetch('/GameTicketPromotionPrice.csv')
+    fetch(EXAMPLE_CSV_PATH) // Use the PUBLIC_URL prefixed path
       .then(response => response.text())
       .then(csvText => {
         Papa.parse(csvText, {
@@ -40,7 +42,7 @@ function FileUpload({ onFileUpload }) {
       })
       .catch(error => {
         console.error("Error fetching example CSV:", error);
-        alert("Could not fetch the example CSV file. Please ensure it is in the public directory.");
+        alert(`Could not fetch the example CSV file from ${EXAMPLE_CSV_PATH}. Please ensure it is in the public directory and the PUBLIC_URL is correctly configured.`);
       });
   }, [onFileUpload]);
 
@@ -60,7 +62,7 @@ function FileUpload({ onFileUpload }) {
         <h3>Upload CSV File</h3>
       </header>
       <small style={{ marginTop: '0.5rem', marginBottom: '1rem', display: 'block' }}>
-        Please upload a CSV file containing your game data, or use this{" "}
+        Please upload a CSV file containing your season schedule, or use this{" "}
         <button onClick={handleLoadExample} style={linkStyle}>
           example
         </button>{" "}

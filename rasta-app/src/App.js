@@ -192,6 +192,7 @@ function App() {
             <RankingForm
               uniqueRankingAttributes={uniqueRankingAttributes}
               onRankingComplete={handleRankingComplete}
+              initialPreferences={rankingPreferences} // Pass existing preferences
             />
           ) : (
             <p>Processing game data for ranking...</p>

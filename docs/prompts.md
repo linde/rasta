@@ -67,9 +67,19 @@ move Locations up to the top of the settings.  also provide a little padding bet
 please make a npm script to compile the app into a dist directory. please exclude the dist directory from github. also, in the readme, please document common steps including publishing. please provide an example gsutil example to publish the compiled directory to a google cloud storage bucket recursively.
 ```
 
+```
+when i run the local server via `python -m http.server --port 8080` and dont specify the base directory then load localhost:8080/dist/ in the browser i am getting 404s becasue the app expects to be in the root director.  please make it work within a subdirectory
+``
+
+```
+settings needs to keep the existing ranking preferences from the previous screen. 
+```
+
+```
+in the ranking preferences, please have a reset icon to reset to zero for all the values. this should be on the "ranking preferences" line in the right corner
+```
+
 # Backlog
-
-
 
 
 ```
