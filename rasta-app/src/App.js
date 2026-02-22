@@ -1,10 +1,11 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react'; // Added useCallback
+import React, { useState, useMemo, useEffect, useCallback } from 'react'; 
 import FileUpload from './components/FileUpload';
 import ColumnMapper from './components/ColumnMapper';
 import RankingForm from './components/RankingForm';
-import GameList from './components/GameList'; // Import GameList
+import GameList from './components/GameList'; 
 import { processGames, extractUniqueValues, generateRanking } from './logic/ranker';
-import moment from 'moment'; // Import moment for date formatting in share text
+import { groupGames } from './logic/grouper'; // Import shared grouping logic
+import moment from 'moment';
 
 function App() {
   const [csvData, setCsvData] = useState(null);
@@ -14,12 +15,12 @@ function App() {
   const [rankingPreferences, setRankingPreferences] = useState(null);
   const [rankedGames, setRankedGames] = useState(null);
   const [showRankingForm, setShowRankingForm] = useState(false);
-  const [shareMessage, setShareMessage] = useState(''); // State for share feedback
-  const [excludedGameIds, setExcludedGameIds] = useState([]); // New state for excluded game IDs
+  const [shareMessage, setShareMessage] = useState(''); 
+  const [excludedGameIds, setExcludedGameIds] = useState([]); 
 
   // Function to reset all relevant state to initial values
   const handleResetApp = useCallback((event) => {
-    if (event) event.preventDefault(); // Prevent default behavior
+    if (event) event.preventDefault(); 
     setCsvData(null);
     setColumnMappings(null);
     setRankingPreferences(null);
@@ -28,8 +29,8 @@ function App() {
     setRankedGames(null);
     setShowRankingForm(false);
     setShareMessage('');
-    setExcludedGameIds([]); // Reset exclusions
-  }, []); // No dependencies, as it always resets to null/empty
+    setExcludedGameIds([]); 
+  }, []); 
 
   // Handlers for state updates
   const handleFileUpload = (data) => {
@@ -39,7 +40,7 @@ function App() {
     setRankedGames(null);
     setShowRankingForm(false);
     setShareMessage('');
-    setExcludedGameIds([]); // Reset exclusions
+    setExcludedGameIds([]); 
     
     // Auto-mapping logic
     if (data && data.length > 0) {
@@ -62,7 +63,6 @@ function App() {
         }
         
         if (Object.keys(autoMappings).length === Object.keys(mappingsToFind).length) {
-            console.log("Auto-mapped columns:", autoMappings);
             handleMappingComplete(autoMappings);
         }
     }
@@ -74,7 +74,7 @@ function App() {
     setRankedGames(null);
     setShowRankingForm(true);
     setShareMessage('');
-    setExcludedGameIds([]); // Reset exclusions
+    setExcludedGameIds([]); 
   };
 
   const handleRankingComplete = (preferences) => {
@@ -92,28 +92,31 @@ function App() {
   const handleExcludeGame = useCallback((gameId) => {
     setExcludedGameIds(prevIds => {
       if (prevIds.includes(gameId)) {
-        return prevIds.filter(id => id !== gameId); // Re-include
+        return prevIds.filter(id => id !== gameId); 
       } else {
-        return [...prevIds, gameId]; // Exclude
+        return [...prevIds, gameId]; 
       }
     });
   }, []);
 
-  // Filter ranked games based on exclusions
-  const filteredRankedGames = useMemo(() => {
-    if (!rankedGames) return null;
-    return rankedGames.filter(game => !excludedGameIds.includes(game.id));
-  }, [rankedGames, excludedGameIds]);
-
-  // Generate shareable text from rankedGames
+  // Generate shareable text from grouped ranked games
   const generateShareText = () => {
-    if (!filteredRankedGames || filteredRankedGames.length === 0) return "No ranked games to share."; // Use filtered games
+    if (!rankedGames || rankedGames.length === 0) return "No ranked games to share.";
+
+    // Use the shared grouping logic
+    const groups = groupGames(rankedGames, excludedGameIds);
+    if (groups.length === 0) return "No ranked games to share.";
 
     let shareText = "My Ranked Season Tickets:\n\n";
-    filteredRankedGames.forEach((game, index) => { // Use filtered games
-        const gameDate = moment(game.gameDate);
-        const formattedTime = moment(game.timeString, ["h:mm A", "H:mm"]).format('hh:mm A');
-        shareText += `${index + 1}. ${gameDate.format('MMM DD, YYYY')} • ${game.opponent} at ${game.location} (${gameDate.format('ddd MM/DD')} @ ${formattedTime})\n`;
+    groups.forEach((group, index) => {
+        if (group.type === 'single') {
+            const gameDate = moment(group.game.gameDate);
+            const formattedTime = moment(group.game.timeString, ["h:mm A", "H:mm"]).format('hh:mm A');
+            shareText += `${index + 1}. ${gameDate.format('MMM DD, YYYY')} • ${group.game.opponent} at ${group.game.location} (${gameDate.format('ddd MM/DD')} @ ${formattedTime})\n`;
+        } else {
+            // Series
+            shareText += `${index + 1}. ${group.formattedDateRangeMain} • ${group.opponent} at ${group.location} (${group.seriesParenthesis})\n`;
+        }
     });
     return shareText;
   };
@@ -122,8 +125,8 @@ function App() {
   const fallbackCopyToClipboard = (text) => {
     const textArea = document.createElement("textarea");
     textArea.value = text;
-    textArea.style.position = "fixed";  // Avoid scrolling to bottom
-    textArea.style.left = "-9999px"; // Hide from view
+    textArea.style.position = "fixed";  
+    textArea.style.left = "-9999px"; 
     document.body.appendChild(textArea);
     textArea.focus();
     textArea.select();
@@ -153,7 +156,6 @@ function App() {
     }
 
     if (!copiedSuccessfully) {
-      // Fallback to document.execCommand('copy')
       copiedSuccessfully = fallbackCopyToClipboard(textToCopy);
     }
 
@@ -195,9 +197,7 @@ function App() {
       setProcessedGames(games);
       const attributes = extractUniqueValues(games);
       setUniqueRankingAttributes(attributes);
-      console.log("Processed Games:", games);
-      console.log("Unique Ranking Attributes:", attributes);
-      // If ranking preferences already exist, re-generate ranks with new processed data
+      
       if (rankingPreferences) {
         const gamesWithRanks = generateRanking(games, rankingPreferences);
         setRankedGames(gamesWithRanks);
@@ -210,7 +210,6 @@ function App() {
     if (processedGames && rankingPreferences) {
       const gamesWithRanks = generateRanking(processedGames, rankingPreferences);
       setRankedGames(gamesWithRanks);
-      console.log("Ranked Games:", gamesWithRanks);
     }
   }, [processedGames, rankingPreferences]);
 
@@ -262,11 +261,11 @@ function App() {
           top: '20px',
           left: '50%',
           transform: 'translateX(-50%)',
-          backgroundColor: 'var(--pico-background-color)', // Use Pico's background color
-          color: 'var(--pico-color)', // Use Pico's text color
+          backgroundColor: 'var(--pico-background-color)', 
+          color: 'var(--pico-color)', 
           padding: '1rem 1.5rem',
-          borderRadius: 'var(--pico-border-radius)', // Use Pico's border radius
-          boxShadow: 'var(--pico-box-shadow)', // Use Pico's box shadow
+          borderRadius: 'var(--pico-border-radius)', 
+          boxShadow: 'var(--pico-box-shadow)', 
           zIndex: 1000,
           textAlign: 'center'
         }}>
@@ -283,7 +282,7 @@ function App() {
             <RankingForm
               uniqueRankingAttributes={uniqueRankingAttributes}
               onRankingComplete={handleRankingComplete}
-              initialPreferences={rankingPreferences} // Pass existing preferences
+              initialPreferences={rankingPreferences} 
             />
           ) : (
             <p>Processing game data for ranking...</p>
@@ -291,9 +290,9 @@ function App() {
         ) : (
           rankedGames ? (
             <GameList 
-              allRankedGames={rankedGames} // Pass unfiltered games
-              excludedGameIds={excludedGameIds} // Pass excluded IDs
-              onExcludeGame={handleExcludeGame} // Pass handler
+              allRankedGames={rankedGames} 
+              excludedGameIds={excludedGameIds} 
+              onExcludeGame={handleExcludeGame} 
             />
           ) : (
             <p>Generating ranks...</p>
@@ -307,7 +306,7 @@ function App() {
           </header>
           <ul style={{ listStyle: 'none', padding: 0 }}>
             {excludedGameIds.map(id => {
-              const game = rankedGames?.find(g => g.id === id); // Find original game details
+              const game = rankedGames?.find(g => g.id === id); 
               if (!game) return null;
               return (
                 <li key={id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
