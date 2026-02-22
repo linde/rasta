@@ -62,7 +62,6 @@ please rename "Time Buckets" to be "Game TIme"; also move time time settings abo
 move Locations up to the top of the settings.  also provide a little padding between the option selections
 ```
 
-
 ```
 please make a npm script to compile the app into a dist directory. please exclude the dist directory from github. also, in the readme, please document common steps including publishing. please provide an example gsutil example to publish the compiled directory to a google cloud storage bucket recursively.
 ```
@@ -77,6 +76,10 @@ settings needs to keep the existing ranking preferences from the previous screen
 
 ```
 in the ranking preferences, please have a reset icon to reset to zero for all the values. this should be on the "ranking preferences" line in the right corner
+```
+
+```
+please add a feature to have a little grey delete "x" that removes the entry manually from the list.  the x should not appear in the clipboard content. it should appear at the end of the row.  for multi-game series, replace the [x] button with a "expand" button that shows the games in the series in rows and have the 'x" button for each so they can individually be excluded from the series.  collect the exclusions in a section called "Exclusions" below the final list of Ranked Games
 ```
 
 # Backlog

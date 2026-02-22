@@ -15,10 +15,11 @@ function App() {
   const [rankedGames, setRankedGames] = useState(null);
   const [showRankingForm, setShowRankingForm] = useState(false);
   const [shareMessage, setShareMessage] = useState(''); // State for share feedback
+  const [excludedGameIds, setExcludedGameIds] = useState([]); // New state for excluded game IDs
 
   // Function to reset all relevant state to initial values
   const handleResetApp = useCallback((event) => {
-    if (event) event.preventDefault(); // Prevent default anchor behavior
+    if (event) event.preventDefault(); // Prevent default behavior
     setCsvData(null);
     setColumnMappings(null);
     setRankingPreferences(null);
@@ -27,6 +28,7 @@ function App() {
     setRankedGames(null);
     setShowRankingForm(false);
     setShareMessage('');
+    setExcludedGameIds([]); // Reset exclusions
   }, []); // No dependencies, as it always resets to null/empty
 
   // Handlers for state updates
@@ -37,6 +39,7 @@ function App() {
     setRankedGames(null);
     setShowRankingForm(false);
     setShareMessage('');
+    setExcludedGameIds([]); // Reset exclusions
     
     // Auto-mapping logic
     if (data && data.length > 0) {
@@ -71,6 +74,7 @@ function App() {
     setRankedGames(null);
     setShowRankingForm(true);
     setShareMessage('');
+    setExcludedGameIds([]); // Reset exclusions
   };
 
   const handleRankingComplete = (preferences) => {
@@ -84,16 +88,32 @@ function App() {
     setShowRankingForm(prev => !prev);
   };
 
+  // Handle excluding/re-including a game
+  const handleExcludeGame = useCallback((gameId) => {
+    setExcludedGameIds(prevIds => {
+      if (prevIds.includes(gameId)) {
+        return prevIds.filter(id => id !== gameId); // Re-include
+      } else {
+        return [...prevIds, gameId]; // Exclude
+      }
+    });
+  }, []);
+
+  // Filter ranked games based on exclusions
+  const filteredRankedGames = useMemo(() => {
+    if (!rankedGames) return null;
+    return rankedGames.filter(game => !excludedGameIds.includes(game.id));
+  }, [rankedGames, excludedGameIds]);
+
   // Generate shareable text from rankedGames
   const generateShareText = () => {
-    if (!rankedGames || rankedGames.length === 0) return "No ranked games to share.";
+    if (!filteredRankedGames || filteredRankedGames.length === 0) return "No ranked games to share."; // Use filtered games
 
     let shareText = "My Ranked Season Tickets:\n\n";
-    rankedGames.forEach((game, index) => {
-        // Need to replicate the GameList display format here
+    filteredRankedGames.forEach((game, index) => { // Use filtered games
         const gameDate = moment(game.gameDate);
         const formattedTime = moment(game.timeString, ["h:mm A", "H:mm"]).format('hh:mm A');
-        shareText += `${index + 1}. ${gameDate.format('MMM DD, YYYY')} - ${game.opponent} at ${game.location} (${gameDate.format('ddd MM/DD')} @ ${formattedTime})\n`;
+        shareText += `${index + 1}. ${gameDate.format('MMM DD, YYYY')} • ${game.opponent} at ${game.location} (${gameDate.format('ddd MM/DD')} @ ${formattedTime})\n`;
     });
     return shareText;
   };
@@ -146,6 +166,20 @@ function App() {
     }
   };
 
+  // Style for the title button to make it look like a link
+  const titleButtonStyle = {
+    background: 'none',
+    border: 'none',
+    padding: 0,
+    color: 'inherit',
+    cursor: 'pointer',
+    font: 'inherit',
+    display: 'inline-flex',
+    alignItems: 'center',
+    textAlign: 'left',
+    textDecoration: 'none'
+  };
+
   // Memoize csvHeaders for performance
   const csvHeaders = useMemo(() => {
     if (csvData && csvData.length > 0) {
@@ -185,14 +219,16 @@ function App() {
       <nav>
         <ul>
           <li>
-            <a href="#" onClick={handleResetApp} style={{ textDecoration: 'none', color: 'inherit' }}> {/* Added anchor tag */}
+            <button onClick={handleResetApp} style={titleButtonStyle}>
               <img 
                 src={`${process.env.PUBLIC_URL}/rasta-icon.png`} 
                 alt="RaSTA Icon" 
                 style={{ height: '64px', verticalAlign: 'middle', marginRight: '8px' }} 
               />
-              <strong style={{ fontSize: '1.5rem' }}>RaSTA</strong> (Rank a Season's Tickets Automatically)
-            </a>
+              <span style={{ fontSize: '1.5rem', fontWeight: 'normal' }}>
+                <strong style={{ fontWeight: 'bold' }}>RaSTA</strong> (Rank a Season's Tickets Automatically)
+              </span>
+            </button>
           </li>
         </ul>
         <ul>
@@ -206,7 +242,6 @@ function App() {
                     <polyline points="16 6 12 2 8 6"></polyline>
                     <line x1="12" y1="2" x2="12" y2="15"></line>
                   </svg>
-                  {/* No "Share" text here */}
                 </button>
               </li>
               <li>
@@ -255,12 +290,43 @@ function App() {
           )
         ) : (
           rankedGames ? (
-            <GameList rankedGames={rankedGames} />
+            <GameList 
+              allRankedGames={rankedGames} // Pass unfiltered games
+              excludedGameIds={excludedGameIds} // Pass excluded IDs
+              onExcludeGame={handleExcludeGame} // Pass handler
+            />
           ) : (
             <p>Generating ranks...</p>
           )
         )}
       </article>
+      {excludedGameIds.length > 0 && (
+        <article>
+          <header>
+            <h4 style={{ margin: 0 }}>Exclusions</h4>
+          </header>
+          <ul style={{ listStyle: 'none', padding: 0 }}>
+            {excludedGameIds.map(id => {
+              const game = rankedGames?.find(g => g.id === id); // Find original game details
+              if (!game) return null;
+              return (
+                <li key={id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                  <p style={{ margin: 0 }}>
+                    {moment(game.gameDate).format('MMM DD, YYYY')} • {game.opponent} at {game.location}
+                  </p>
+                  <button 
+                    onClick={() => handleExcludeGame(id)} 
+                    className="secondary outline" 
+                    style={{ marginLeft: '1rem', padding: '0.2rem 0.5rem', border: 'none', height: 'auto', width: 'auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    <span style={{ fontSize: '1.2rem', fontWeight: 'bold', lineHeight: 1 }}>⟲</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </article>
+      )}
     </main>
   );
 }

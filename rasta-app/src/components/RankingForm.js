@@ -14,6 +14,10 @@ function RankingForm({ uniqueRankingAttributes, onRankingComplete, initialPrefer
     uniqueRankingAttributes.gameMonths.forEach(month => {
       defaultPrefs[`gameMonth-${month}`] = 0;
     });
+    // Add Day of Week preferences
+    uniqueRankingAttributes.daysOfWeek.forEach(day => {
+      defaultPrefs[`dayOfWeek-${day}`] = 0;
+    });
     uniqueRankingAttributes.timeBuckets.forEach(bucket => {
       defaultPrefs[`timeBucket-${bucket}`] = 0;
     });
@@ -35,6 +39,10 @@ function RankingForm({ uniqueRankingAttributes, onRankingComplete, initialPrefer
     // Initialize Game Month preferences
     uniqueRankingAttributes.gameMonths.forEach(month => {
       newInitialPreferences[`gameMonth-${month}`] = initialPreferences?.[`gameMonth-${month}`] || 0;
+    });
+    // Initialize Day of Week preferences
+    uniqueRankingAttributes.daysOfWeek.forEach(day => {
+      newInitialPreferences[`dayOfWeek-${day}`] = initialPreferences?.[`dayOfWeek-${day}`] || 0;
     });
     uniqueRankingAttributes.timeBuckets.forEach(bucket => {
       newInitialPreferences[`timeBucket-${bucket}`] = initialPreferences?.[`timeBucket-${bucket}`] || 0;
@@ -95,7 +103,7 @@ function RankingForm({ uniqueRankingAttributes, onRankingComplete, initialPrefer
           </div>
         ))}
 
-        {/* New Game Month section */}
+        {/* Game Month section */}
         <h4 style={{ marginTop: '2rem', marginBottom: '1rem' }}>Game Month</h4>
         {uniqueRankingAttributes.gameMonths.map(month => (
           <div key={`gameMonth-${month}`} className="grid">
@@ -109,6 +117,23 @@ function RankingForm({ uniqueRankingAttributes, onRankingComplete, initialPrefer
               onChange={(e) => handlePreferenceChange(`gameMonth-${month}`, e.target.value)}
             />
             <span>{preferences[`gameMonth-${month}`] || 0}</span>
+          </div>
+        ))}
+
+        {/* Day of Week section */}
+        <h4 style={{ marginTop: '2rem', marginBottom: '1rem' }}>Day of Week</h4>
+        {uniqueRankingAttributes.daysOfWeek.map(day => (
+          <div key={`dayOfWeek-${day}`} className="grid">
+            <label htmlFor={`dayOfWeek-${day}`}>{day}</label>
+            <input
+              type="range"
+              id={`dayOfWeek-${day}`}
+              min="-10"
+              max="10"
+              value={preferences[`dayOfWeek-${day}`] || 0}
+              onChange={(e) => handlePreferenceChange(`dayOfWeek-${day}`, e.target.value)}
+            />
+            <span>{preferences[`dayOfWeek-${day}`] || 0}</span>
           </div>
         ))}
 

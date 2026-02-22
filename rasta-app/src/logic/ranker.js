@@ -38,7 +38,10 @@ export const processGames = (csvData, columnMappings) => {
     const gameDate = moment(gameDateString); // Parse game date
     const timeBucket = getTimeBucket(timeString);
     const midweekDayGame = isMidweekDayGame(gameDateString, timeString);
-    const gameMonth = gameDate.isValid() ? gameDate.format('MMMM') : 'Unknown'; // Extract full month name
+    const gameMonth = gameDate.isValid() ? gameDate.format('MMMM') : 'Unknown'; 
+    const dayOfWeek = gameDate.isValid() ? gameDate.format('ルト') : 'Unknown'; // Default full day name (localized by locale, but usually English in CRA defaults)
+    // Actually using .format('dddd') for clarity
+    const dddd = gameDate.isValid() ? gameDate.format('dddd') : 'Unknown';
 
     return {
       id: `game-${index}`, // Unique ID for each game
@@ -49,7 +52,8 @@ export const processGames = (csvData, columnMappings) => {
       location,
       timeBucket,
       midweekDayGame,
-      gameMonth, // Add gameMonth to the processed game object
+      gameMonth, 
+      dayOfWeek: dddd, // Full day name (e.g. "Monday")
       rank: 0, // Default rank, will be updated later
     };
   }).filter(game => game.gameDate !== null); // Filter out games with invalid dates
@@ -58,25 +62,29 @@ export const processGames = (csvData, columnMappings) => {
 export const extractUniqueValues = (processedGames) => {
   const uniqueOpponents = new Set();
   const uniqueLocations = new Set();
-  const uniqueTimeBuckets = new Set(); // Morning, Afternoon, Evening
-  const uniqueGameMonths = new Set(); // e.g., "January", "February"
+  const uniqueTimeBuckets = new Set(); 
+  const uniqueGameMonths = new Set(); 
+  const uniqueDaysOfWeek = new Set();
 
   processedGames.forEach(game => {
     if (game.opponent) uniqueOpponents.add(game.opponent);
     if (game.location) uniqueLocations.add(game.location);
     if (game.timeBucket) uniqueTimeBuckets.add(game.timeBucket);
     if (game.gameMonth) uniqueGameMonths.add(game.gameMonth);
+    if (game.dayOfWeek) uniqueDaysOfWeek.add(game.dayOfWeek);
   });
 
-  // Define month order for sorting
+  // Define sort orders
   const monthOrder = moment.months();
+  const dayOrder = moment.weekdays(); // Sunday, Monday, ...
 
   return {
     opponents: Array.from(uniqueOpponents).sort(),
     locations: Array.from(uniqueLocations).sort(),
-    timeBuckets: ['Morning', 'Afternoon', 'Evening'].filter(bucket => uniqueTimeBuckets.has(bucket)), // Ensure consistent order
-    midweekDayGame: [true, false], // Always provide these two options for ranking
-    gameMonths: Array.from(uniqueGameMonths).sort((a, b) => monthOrder.indexOf(a) - monthOrder.indexOf(b)), // Sort months correctly
+    timeBuckets: ['Morning', 'Afternoon', 'Evening'].filter(bucket => uniqueTimeBuckets.has(bucket)),
+    midweekDayGame: [true, false], 
+    gameMonths: Array.from(uniqueGameMonths).sort((a, b) => monthOrder.indexOf(a) - monthOrder.indexOf(b)),
+    daysOfWeek: Array.from(uniqueDaysOfWeek).sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b)),
   };
 };
 
@@ -86,24 +94,17 @@ export const generateRanking = (processedGames, rankingPreferences) => {
   const rankedGames = processedGames.map(game => {
     let score = 0;
 
-    // Apply opponent preference
+    // Apply preferences
     score += rankingPreferences[`opponent-${game.opponent}`] || 0;
-
-    // Apply location preference
     score += rankingPreferences[`location-${game.location}`] || 0;
-
-    // Apply time bucket preference
     score += rankingPreferences[`timeBucket-${game.timeBucket}`] || 0;
-
-    // Apply midweek day game preference
     score += rankingPreferences[`midweekDayGame-${game.midweekDayGame}`] || 0;
-
-    // Apply game month preference
     score += rankingPreferences[`gameMonth-${game.gameMonth}`] || 0;
+    score += rankingPreferences[`dayOfWeek-${game.dayOfWeek}`] || 0;
 
     return {
       ...game,
-      score: score, // Store the calculated score
+      score: score, 
     };
   });
 

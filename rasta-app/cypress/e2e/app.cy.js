@@ -20,8 +20,8 @@ describe('RaSTA Application', () => {
     cy.contains('button', 'example').click();
     cy.contains('h3', 'Set Ranking Preferences').should('be.visible');
 
-    // Click the title link to reset the app
-    cy.get('nav li').first().find('a').click();
+    // Click the title button to reset the app
+    cy.get('nav li').first().find('button').click();
 
     // Verify that the application has returned to the initial file upload screen
     cy.contains('h3', 'Upload CSV File').should('be.visible');

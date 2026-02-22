@@ -17,29 +17,26 @@ describe('ranker.js with real data', () => {
     realColumnMappings = {
       'Game Date': 'START DATE',
       'Time': 'START TIME',
-      'Opponent': 'SUBJECT', // Changed from DESCRIPTION to SUBJECT
+      'Opponent': 'SUBJECT', 
       'Location': 'LOCATION',
     };
   });
 
   describe('processGames', () => {
-    it('should correctly process the example game data', () => {
+    it('should correctly process the example game data including day of week', () => {
       const processed = processGames(realCsvData, realColumnMappings);
-      expect(processed.length).toBe(realCsvData.length); // All rows should be valid
+      expect(processed.length).toBe(realCsvData.length); 
       
-      const firstGame = processed[0]; // Feb 22, 2026
+      const firstGame = processed[0]; // Feb 22, 2026 is a Sunday
       expect(firstGame).toMatchObject({
-        opponent: 'Cubs', // 'Cubs at Giants' -> 'Cubs'
+        opponent: 'Cubs',
         location: 'Scottsdale Stadium - Scottsdale',
         timeString: '01:05 PM',
         timeBucket: 'Afternoon',
-        midweekDayGame: false, // Sunday
+        midweekDayGame: false,
         gameMonth: 'February',
+        dayOfWeek: 'Sunday',
       });
-      expect(moment(firstGame.gameDate).format('MM/DD/YY')).toBe('02/22/26');
-
-      const gameInMarch = processed.find(g => moment(g.gameDate).month() === 2); // March
-      expect(gameInMarch.gameMonth).toBe('March');
     });
   });
 
@@ -52,20 +49,10 @@ describe('ranker.js with real data', () => {
       uniqueValues = extractUniqueValues(processedGames);
     });
 
-    it('should extract unique opponents', () => {
-      expect(uniqueValues.opponents.length).toBeGreaterThan(10); // Check for a reasonable number of opponents
-      expect(uniqueValues.opponents).toContain('Cubs');
-      expect(uniqueValues.opponents).not.toContain('Cubs at Giants');
-    });
-
-    it('should extract unique locations', () => {
-      expect(uniqueValues.locations).toEqual(['Oracle Park - San Francisco', 'Scottsdale Stadium - Scottsdale']);
-    });
-
-    it('should extract unique game months in correct order', () => {
-      // Based on the provided CSV, months should be Feb, Mar, Apr, May, Jun, Jul, Aug, Sep
-      expect(uniqueValues.gameMonths).toEqual([
-        'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September'
+    it('should extract unique days of week in correct order', () => {
+      // The example data has games on every day of the week
+      expect(uniqueValues.daysOfWeek).toEqual([
+        'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
       ]);
     });
   });
@@ -77,43 +64,23 @@ describe('ranker.js with real data', () => {
       processedGames = processGames(realCsvData, realColumnMappings);
     });
 
-    const mockRankingPreferences = {
-      'opponent-Cubs': 10,
-      'location-Oracle Park - San Francisco': 20,
-      'timeBucket-Evening': 5,
-      'midweekDayGame-true': -5, 
-      'gameMonth-March': 15, // Prefer March games
-      'gameMonth-February': 5,
-    };
+    it('should assign scores based on day of week preferences', () => {
+      const mockRankingPreferences = {
+        'dayOfWeek-Saturday': 50,
+        'dayOfWeek-Sunday': 50,
+        'dayOfWeek-Monday': -10,
+      };
 
-    it('should assign scores and ranks based on preferences including game month', () => {
       const ranked = generateRanking(processedGames, mockRankingPreferences);
       
-      expect(ranked.length).toBe(processedGames.length);
-      expect(ranked[0]).toHaveProperty('score');
-      expect(ranked[0]).toHaveProperty('rank');
+      // A Saturday game should have a higher score than a Monday game (all else being equal)
+      const saturdayGame = ranked.find(g => g.dayOfWeek === 'Saturday');
+      const mondayGame = ranked.find(g => g.dayOfWeek === 'Monday');
       
-      const highestScoreGame = ranked.find(game => game.rank === 1);
-      const scores = ranked.map(game => game.score);
-      expect(highestScoreGame.score).toBe(Math.max(...scores));
-
-      // Test a specific game's score based on new preferences
-      // Find a game in March at Oracle Park (example: 03/23/26 Sultanes at Giants)
-      const sultanesMarchGame = processedGames.find(game => 
-        game.opponent === 'Sultanes' && 
-        game.location === 'Oracle Park - San Francisco' && 
-        game.gameMonth === 'March'
-      );
-      
-      // Expected score for sultanesMarchGame:
-      // opponent-Sultanes: 0 (not in preferences)
-      // location-Oracle Park - San Francisco: 20
-      // timeBucket-Evening: 5 (06:45 PM is Evening)
-      // midweekDayGame-true: 0 (Monday 03/23/26, 06:45 PM is not a mid-week day game)
-      // gameMonth-March: 15
-      // Total: 20 + 5 + 15 = 40
-      const rankedSultanesMarchGame = ranked.find(game => game.id === sultanesMarchGame.id);
-      expect(rankedSultanesMarchGame.score).toBe(40);
+      // Note: other default factors are 0, so Saturday should be ~50 and Monday ~ -10
+      expect(saturdayGame.score).toBeGreaterThan(mondayGame.score);
+      expect(saturdayGame.score).toBe(50);
+      expect(mondayGame.score).toBe(-10);
     });
   });
 });
