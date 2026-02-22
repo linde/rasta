@@ -1,0 +1,49 @@
+{
+  "name": "rasta-app",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@picocss/pico": "^2.1.1",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^13.5.0",
+    "cypress": "^15.10.0",
+    "moment": "^2.30.1",
+    "papaparse": "^5.5.3",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-scripts": "5.0.1",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "test:unit": "react-scripts test rasta-app/src/logic/ranker.test.js --watchAll=false",
+    "e2e": "start-server-and-test start http://localhost:3000 e2e:headless",
+    "e2e:headless": "cypress run",
+    "e2e:open": "cypress open"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "start-server-and-test": "^2.1.3"
+  }
+}
