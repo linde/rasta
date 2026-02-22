@@ -137,7 +137,14 @@ function App() {
     <main className="container">
       <nav>
         <ul>
-          <li><strong>RASTA (Rank A Season's Tickets Automatically)</strong></li>
+          <li>
+            <img 
+              src={`${process.env.PUBLIC_URL}/rasta-icon.png`} 
+              alt="RASTA Icon" 
+              style={{ height: '64px', verticalAlign: 'middle', marginRight: '8px' }} 
+            />
+            <strong style={{ fontSize: '1.5rem' }}>RaSTA</strong> (Rank a Season's Tickets Automatically)
+          </li>
         </ul>
         <ul>
           {/* Show Share and Settings buttons only if there's data to rank */}
