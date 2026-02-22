@@ -31,7 +31,7 @@ Start the development server:
 ```bash
 npm start
 ```
-This will open the application in your browser at `http://localhost:3000`.
+This will start the development server on `http://localhost:3001` without automatically opening a browser window.
 
 ### 4. Build for Production
 To create a production-ready build, which will output to the `dist` directory:
@@ -85,6 +85,7 @@ rasta-app/
 │   └── e2e/
 │       └── app.cy.js        # Basic E2E test
 │       └── example-flow.cy.js # E2E test for example CSV flow
+│       └── clipboard.cy.js  # E2E test for clipboard copy functionality
 ├── node_modules/            # Installed Node.js modules
 ├── package.json             # Project metadata and dependencies
 ├── cypress.config.js        # Cypress configuration
@@ -117,7 +118,7 @@ npm run e2e
 ```
 This command will automatically:
 1. Start the React development server.
-2. Wait for the server to be ready on `http://localhost:3000`.
+2. Wait for the server to be ready on `http://localhost:3001`.
 3. Run all Cypress tests in headless mode.
 4. Shut down the server after the tests are complete.
 

@@ -5,7 +5,7 @@ module.exports = defineConfig({
     setupNodeEvents(on, config) {
       // implement node event listeners here
     },
-    baseUrl: 'http://localhost:3000', // Assuming your React app runs on port 3000
+    baseUrl: 'http://localhost:3001', // Updated to port 3001
     specPattern: 'cypress/e2e/**/*.cy.{js,jsx,ts,tsx}',
     supportFile: false, // Disable the default support file
   },

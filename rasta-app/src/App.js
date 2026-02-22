@@ -85,15 +85,49 @@ function App() {
     return shareText;
   };
 
+  // Fallback for document.execCommand('copy')
+  const fallbackCopyToClipboard = (text) => {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";  // Avoid scrolling to bottom
+    textArea.style.left = "-9999px"; // Hide from view
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      return true;
+    } catch (err) {
+      console.error('Fallback: Failed to copy text: ', err);
+      document.body.removeChild(textArea);
+      return false;
+    }
+  };
+
   // Handle sharing to clipboard
   const handleShare = async () => {
-    try {
-      const textToCopy = generateShareText();
-      await navigator.clipboard.writeText(textToCopy);
+    const textToCopy = generateShareText();
+    let copiedSuccessfully = false;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(textToCopy);
+        copiedSuccessfully = true;
+      } catch (err) {
+        console.error('navigator.clipboard.writeText failed: ', err);
+      }
+    }
+
+    if (!copiedSuccessfully) {
+      // Fallback to document.execCommand('copy')
+      copiedSuccessfully = fallbackCopyToClipboard(textToCopy);
+    }
+
+    if (copiedSuccessfully) {
       setShareMessage('Copied to clipboard!');
-      setTimeout(() => setShareMessage(''), 3000); // Clear message after 3 seconds
-    } catch (err) {
-      console.error('Failed to copy text: ', err);
+      setTimeout(() => setShareMessage(''), 3000);
+    } else {
       setShareMessage('Failed to copy.');
       setTimeout(() => setShareMessage(''), 3000);
     }
