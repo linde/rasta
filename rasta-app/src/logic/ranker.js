@@ -38,6 +38,7 @@ export const processGames = (csvData, columnMappings) => {
     const gameDate = moment(gameDateString); // Parse game date
     const timeBucket = getTimeBucket(timeString);
     const midweekDayGame = isMidweekDayGame(gameDateString, timeString);
+    const gameMonth = gameDate.isValid() ? gameDate.format('MMMM') : 'Unknown'; // Extract full month name
 
     return {
       id: `game-${index}`, // Unique ID for each game
@@ -48,6 +49,7 @@ export const processGames = (csvData, columnMappings) => {
       location,
       timeBucket,
       midweekDayGame,
+      gameMonth, // Add gameMonth to the processed game object
       rank: 0, // Default rank, will be updated later
     };
   }).filter(game => game.gameDate !== null); // Filter out games with invalid dates
@@ -57,18 +59,24 @@ export const extractUniqueValues = (processedGames) => {
   const uniqueOpponents = new Set();
   const uniqueLocations = new Set();
   const uniqueTimeBuckets = new Set(); // Morning, Afternoon, Evening
+  const uniqueGameMonths = new Set(); // e.g., "January", "February"
 
   processedGames.forEach(game => {
     if (game.opponent) uniqueOpponents.add(game.opponent);
     if (game.location) uniqueLocations.add(game.location);
     if (game.timeBucket) uniqueTimeBuckets.add(game.timeBucket);
+    if (game.gameMonth) uniqueGameMonths.add(game.gameMonth);
   });
+
+  // Define month order for sorting
+  const monthOrder = moment.months();
 
   return {
     opponents: Array.from(uniqueOpponents).sort(),
     locations: Array.from(uniqueLocations).sort(),
     timeBuckets: ['Morning', 'Afternoon', 'Evening'].filter(bucket => uniqueTimeBuckets.has(bucket)), // Ensure consistent order
     midweekDayGame: [true, false], // Always provide these two options for ranking
+    gameMonths: Array.from(uniqueGameMonths).sort((a, b) => monthOrder.indexOf(a) - monthOrder.indexOf(b)), // Sort months correctly
   };
 };
 
@@ -89,6 +97,9 @@ export const generateRanking = (processedGames, rankingPreferences) => {
 
     // Apply midweek day game preference
     score += rankingPreferences[`midweekDayGame-${game.midweekDayGame}`] || 0;
+
+    // Apply game month preference
+    score += rankingPreferences[`gameMonth-${game.gameMonth}`] || 0;
 
     return {
       ...game,

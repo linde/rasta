@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react'; // Added useCallback
 import FileUpload from './components/FileUpload';
 import ColumnMapper from './components/ColumnMapper';
 import RankingForm from './components/RankingForm';
@@ -15,6 +15,19 @@ function App() {
   const [rankedGames, setRankedGames] = useState(null);
   const [showRankingForm, setShowRankingForm] = useState(false);
   const [shareMessage, setShareMessage] = useState(''); // State for share feedback
+
+  // Function to reset all relevant state to initial values
+  const handleResetApp = useCallback((event) => {
+    if (event) event.preventDefault(); // Prevent default anchor behavior
+    setCsvData(null);
+    setColumnMappings(null);
+    setRankingPreferences(null);
+    setProcessedGames(null);
+    setUniqueRankingAttributes(null);
+    setRankedGames(null);
+    setShowRankingForm(false);
+    setShareMessage('');
+  }, []); // No dependencies, as it always resets to null/empty
 
   // Handlers for state updates
   const handleFileUpload = (data) => {
@@ -172,12 +185,14 @@ function App() {
       <nav>
         <ul>
           <li>
-            <img 
-              src={`${process.env.PUBLIC_URL}/rasta-icon.png`} 
-              alt="RASTA Icon" 
-              style={{ height: '64px', verticalAlign: 'middle', marginRight: '8px' }} 
-            />
-            <strong style={{ fontSize: '1.5rem' }}>RaSTA</strong> (Rank a Season's Tickets Automatically)
+            <a href="#" onClick={handleResetApp} style={{ textDecoration: 'none', color: 'inherit' }}> {/* Added anchor tag */}
+              <img 
+                src={`${process.env.PUBLIC_URL}/rasta-icon.png`} 
+                alt="RaSTA Icon" 
+                style={{ height: '64px', verticalAlign: 'middle', marginRight: '8px' }} 
+              />
+              <strong style={{ fontSize: '1.5rem' }}>RaSTA</strong> (Rank a Season's Tickets Automatically)
+            </a>
           </li>
         </ul>
         <ul>

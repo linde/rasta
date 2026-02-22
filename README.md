@@ -31,7 +31,7 @@ Start the development server:
 ```bash
 npm start
 ```
-This will start the development server on `http://localhost:3001` without automatically opening a browser window.
+This will start the development server on `http://localhost:3000` and automatically open a browser window.
 
 ### 4. Build for Production
 To create a production-ready build, which will output to the `dist` directory:
@@ -117,8 +117,8 @@ To run E2E tests in headless mode:
 npm run e2e
 ```
 This command will automatically:
-1. Start the React development server.
-2. Wait for the server to be ready on `http://localhost:3001`.
+1. Start the React development server on `http://localhost:3001`.
+2. Wait for the server to be ready.
 3. Run all Cypress tests in headless mode.
 4. Shut down the server after the tests are complete.
 
@@ -126,4 +126,8 @@ To open the Cypress Test Runner for interactive testing:
 ```bash
 npm run e2e:open
 ```
-This requires you to have the application running in a separate terminal (`npm start`).
+This command will:
+1. Start the React development server on `http://localhost:3001` (without opening a browser).
+2. Wait for the server to be ready.
+3. Open the Cypress Test Runner, from which you can select and run tests.
+4. Shut down the server once Cypress Test Runner is closed.

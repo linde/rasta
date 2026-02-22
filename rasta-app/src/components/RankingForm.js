@@ -10,6 +10,10 @@ function RankingForm({ uniqueRankingAttributes, onRankingComplete, initialPrefer
     uniqueRankingAttributes.locations.forEach(location => {
       defaultPrefs[`location-${location}`] = 0;
     });
+    // Add Game Month preferences
+    uniqueRankingAttributes.gameMonths.forEach(month => {
+      defaultPrefs[`gameMonth-${month}`] = 0;
+    });
     uniqueRankingAttributes.timeBuckets.forEach(bucket => {
       defaultPrefs[`timeBucket-${bucket}`] = 0;
     });
@@ -22,13 +26,27 @@ function RankingForm({ uniqueRankingAttributes, onRankingComplete, initialPrefer
   }, [uniqueRankingAttributes]);
 
   useEffect(() => {
+    const newInitialPreferences = {};
+
     // Initialize with provided initialPreferences if they exist, otherwise default to 0
-    if (initialPreferences && Object.keys(initialPreferences).length > 0) {
-      setPreferences(initialPreferences);
-    } else {
-      setPreferences(generateDefaultPreferences());
-    }
-  }, [uniqueRankingAttributes, initialPreferences, generateDefaultPreferences]); // Depend on initialPreferences and generateDefaultPreferences
+    uniqueRankingAttributes.locations.forEach(location => {
+      newInitialPreferences[`location-${location}`] = initialPreferences?.[`location-${location}`] || 0;
+    });
+    // Initialize Game Month preferences
+    uniqueRankingAttributes.gameMonths.forEach(month => {
+      newInitialPreferences[`gameMonth-${month}`] = initialPreferences?.[`gameMonth-${month}`] || 0;
+    });
+    uniqueRankingAttributes.timeBuckets.forEach(bucket => {
+      newInitialPreferences[`timeBucket-${bucket}`] = initialPreferences?.[`timeBucket-${bucket}`] || 0;
+    });
+    newInitialPreferences['midweekDayGame-true'] = initialPreferences?.['midweekDayGame-true'] || 0;
+    newInitialPreferences['midweekDayGame-false'] = initialPreferences?.['midweekDayGame-false'] || 0;
+    uniqueRankingAttributes.opponents.forEach(opponent => {
+      newInitialPreferences[`opponent-${opponent}`] = initialPreferences?.[`opponent-${opponent}`] || 0;
+    });
+
+    setPreferences(newInitialPreferences);
+  }, [uniqueRankingAttributes, initialPreferences, generateDefaultPreferences]);
 
   const handlePreferenceChange = (key, value) => {
     setPreferences(prevPreferences => ({
@@ -74,6 +92,23 @@ function RankingForm({ uniqueRankingAttributes, onRankingComplete, initialPrefer
               onChange={(e) => handlePreferenceChange(`location-${location}`, e.target.value)}
             />
             <span>{preferences[`location-${location}`] || 0}</span>
+          </div>
+        ))}
+
+        {/* New Game Month section */}
+        <h4 style={{ marginTop: '2rem', marginBottom: '1rem' }}>Game Month</h4>
+        {uniqueRankingAttributes.gameMonths.map(month => (
+          <div key={`gameMonth-${month}`} className="grid">
+            <label htmlFor={`gameMonth-${month}`}>{month}</label>
+            <input
+              type="range"
+              id={`gameMonth-${month}`}
+              min="-10"
+              max="10"
+              value={preferences[`gameMonth-${month}`] || 0}
+              onChange={(e) => handlePreferenceChange(`gameMonth-${month}`, e.target.value)}
+            />
+            <span>{preferences[`gameMonth-${month}`] || 0}</span>
           </div>
         ))}
 
