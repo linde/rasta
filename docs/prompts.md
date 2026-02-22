@@ -22,7 +22,7 @@ please also create an overall brief README.md that outlines what is in the proje
 
 
 ```
-please title the app, "RASTA (Rank A Season's Ticket Automatically)". also, please rank the subsequent list by rank descending.
+please title the app, "RaSTA (Rank a Season's Ticket Automatically)". also, please rank the subsequent list by rank descending.
 ```
 
 

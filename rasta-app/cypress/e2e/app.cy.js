@@ -1,4 +1,4 @@
-describe('RASTA Application', () => {
+describe('RaSTA Application', () => {
   beforeEach(() => {
     cy.visit('/');
   });

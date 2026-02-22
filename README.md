@@ -1,4 +1,4 @@
-# RASTA (Rank A Season's Tickets Automatically)
+# RaSTA (Rank a Season's Tickets Automatically)
 
 This project is a static single-page application (SPA) designed to help users rank their season tickets. It allows for uploading a CSV file containing game information, mapping relevant columns, and then interactively ranking games based on user-defined criteria. The application groups similar games into "series" for easier management.
 
@@ -56,7 +56,7 @@ After building the application, you can serve the static files locally using a s
     ```
     http://localhost:8080
     ```
-    You should see the production version of the RASTA application running.
+    You should see the production version of the RaSTA application running.
 
 ## Publishing to Google Cloud Storage (GCS)
 
