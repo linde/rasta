@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import moment from 'moment';
 
 const GameList = ({ rankedGames }) => {

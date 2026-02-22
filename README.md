@@ -42,19 +42,19 @@ The optimized static files will be generated in the newly created `dist` directo
 
 ## Serving the Static Build Locally
 
-After building the application, you can serve the static files locally using a simple Python HTTP server to test the production build.
+After building the application, you can serve the static files locally using a simple Python HTTP server to test the production build. This setup respects relative paths for all resources.
 
-1.  **Navigate to the `rasta-app` directory (if not already there):**
+1.  **Navigate into the `dist` directory:**
     ```bash
-    cd rasta-app
+    cd rasta-app/dist
     ```
-2.  **Run the Python HTTP server from the root of the `rasta-app` directory:**
+2.  **Run the Python HTTP server:**
     ```bash
     python -m http.server --port 8080
     ```
 3.  **Open your web browser and navigate to:**
     ```
-    http://localhost:8080/dist/
+    http://localhost:8080
     ```
     You should see the production version of the RASTA application running.
 
@@ -98,12 +98,12 @@ The project includes both unit tests and end-to-end (E2E) tests.
 ### Unit Tests
 Unit tests are written using Jest (configured by `react-scripts`) and are located alongside the logic they test.
 
-To run all unit tests:
+To run all unit tests (non-interactively):
 ```bash
 npm test
 ```
 
-To run a specific unit test file (e.g., for `ranker.js`):
+To run a specific unit test file (non-interactively, e.g., for `ranker.js`):
 ```bash
 npm run test:unit
 ```

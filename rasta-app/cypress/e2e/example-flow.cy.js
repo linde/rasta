@@ -5,7 +5,8 @@ describe('Example CSV Flow', () => {
 
   it('should load the example, auto-map columns, and display the ranking form', () => {
     // 1. Find and click the button to load the example
-    cy.contains('button', 'use this example from the 2026 gmen').click();
+    // The button now only contains the text "example"
+    cy.contains('button', 'example').click();
 
     // 2. Verify that the RankingForm is now visible
     cy.contains('h3', 'Set Ranking Preferences').should('be.visible');

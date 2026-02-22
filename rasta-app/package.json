@@ -2,7 +2,8 @@
   "name": "rasta-app",
   "version": "0.1.0",
   "private": true,
-  "homepage": "/dist",
+  "homepage": ".",
+
   "dependencies": {
     "@picocss/pico": "^2.1.1",
     "@testing-library/dom": "^10.4.1",
@@ -20,7 +21,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "cross-env BUILD_PATH=dist react-scripts build",
-    "test": "react-scripts test",
+    "test": "react-scripts test --watchAll=false",
     "test:unit": "react-scripts test rasta-app/src/logic/ranker.test.js --watchAll=false",
     "e2e": "start-server-and-test start http://localhost:3000 e2e:headless",
     "e2e:headless": "cypress run",
