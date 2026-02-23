@@ -4,7 +4,7 @@ export const groupGames = (allRankedGames, excludedGameIds) => {
   if (!allRankedGames || allRankedGames.length === 0) return [];
 
   const groups = [];
-  // Sort all games by date for stable series detection
+  // Use ALL games for grouping logic, sorted by date for stable structural detection
   const sortedAllGames = [...allRankedGames].sort((a, b) => a.gameDate - b.gameDate); 
 
   let processedGameIds = new Set(); 
@@ -14,7 +14,8 @@ export const groupGames = (allRankedGames, excludedGameIds) => {
           return; 
       }
 
-      let seriesCandidates = [game];
+      // 1. Identify "Structural Series": games against same opponent/location within 4 days
+      let structuralSeriesCandidates = [game];
       for (let j = index + 1; j < sortedAllGames.length; j++) {
           const nextGame = sortedAllGames[j];
 
@@ -22,29 +23,28 @@ export const groupGames = (allRankedGames, excludedGameIds) => {
           const isSameLocation = game.location === nextGame.location;
           const daysDiff = moment(nextGame.gameDate).diff(moment(game.gameDate), 'days');
 
-          // Find games that are part of the original series structure
           if (isSameOpponent && isSameLocation && daysDiff > 0 && daysDiff <= 4) {
-              seriesCandidates.push(nextGame);
+              structuralSeriesCandidates.push(nextGame);
           }
       }
 
-      // We check if this structural group has any games that are "close" in rank among ALL games
-      const highestRankInStructuralSeries = Math.min(...seriesCandidates.map(p => p.rank));
-      const finalStructuralSeries = seriesCandidates.filter(p => Math.abs(p.rank - highestRankInStructuralSeries) <= 5);
+      // Mark these structural members as processed so we don't start a new group with them
+      structuralSeriesCandidates.forEach(c => processedGameIds.add(c.id));
 
-      // A group is defined by its original members.
-      // We only care about members that are NOT excluded for rendering.
-      const activeSeriesGames = finalStructuralSeries.filter(g => !excludedGameIds.includes(g.id));
+      // 2. Identify "Ranked Series": members of the structural series that are "close" in rank
+      const highestRankInStructuralSeries = Math.min(...structuralSeriesCandidates.map(p => p.rank));
+      const rankedSeriesGames = structuralSeriesCandidates.filter(p => Math.abs(p.rank - highestRankInStructuralSeries) <= 5);
 
-      if (activeSeriesGames.length > 1) {
-          // Stable key based on the FIRST game of the original structural series
-          const seriesKey = `${finalStructuralSeries[0].opponent}-${finalStructuralSeries[0].location}-${moment(finalStructuralSeries[0].gameDate).format('YYYYMMDD')}`;
-          
-          activeSeriesGames.sort((a, b) => a.rank - b.rank); 
-          finalStructuralSeries.forEach(g => processedGameIds.add(g.id));
+      // 3. Identify "Active Series": members of the ranked series that are NOT excluded
+      const activeGames = rankedSeriesGames.filter(g => !excludedGameIds.includes(g.id));
 
-          const minDate = moment.min(activeSeriesGames.map(g => moment(g.gameDate)));
-          const maxDate = moment.max(activeSeriesGames.map(g => moment(g.gameDate)));
+      if (activeGames.length > 1) {
+          // It's still a series group
+          const seriesKey = `${game.opponent}-${game.location}-${moment(game.gameDate).format('YYYYMMDD')}`;
+          activeGames.sort((a, b) => a.rank - b.rank); 
+
+          const minDate = moment.min(activeGames.map(g => moment(g.gameDate)));
+          const maxDate = moment.max(activeGames.map(g => moment(g.gameDate)));
 
           let formattedDateRangeMain;
           if (minDate.format('YYYY') === maxDate.format('YYYY') && minDate.format('MMM') === maxDate.format('MMM')) {
@@ -55,28 +55,38 @@ export const groupGames = (allRankedGames, excludedGameIds) => {
               formattedDateRangeMain = `${minDate.format('MMM D, YYYY')} - ${maxDate.format('MMM D, YYYY')}`;
           }
           
-          const seriesParenthesis = activeSeriesGames.map(g => 
+          const seriesParenthesis = activeGames.map(g => 
               `${moment(g.gameDate).format('ddd MM/DD')} @ ${moment(g.timeString, ["h:mm A", "H:mm"]).format('hh:mm')}`
           ).join(', ');
 
           groups.push({
               type: 'series',
               key: seriesKey,
-              games: activeSeriesGames, 
+              games: activeGames, 
               formattedDateRangeMain: formattedDateRangeMain,
-              opponent: activeSeriesGames[0].opponent,
-              location: activeSeriesGames[0].location,
+              opponent: activeGames[0].opponent,
+              location: activeGames[0].location,
               seriesParenthesis: seriesParenthesis,
-              representativeRank: activeSeriesGames[0].rank // Used for final sorting
+              representativeRank: activeGames[0].rank 
           });
-      } else if (activeSeriesGames.length === 1) {
-          // If only one game is left, it's a single game entry
-          groups.push({ type: 'single', game: activeSeriesGames[0] });
-          finalStructuralSeries.forEach(g => processedGameIds.add(g.id));
-      } else {
-          // All games in this potential group were excluded
-          finalStructuralSeries.forEach(g => processedGameIds.add(g.id));
+      } else if (activeGames.length === 1) {
+          // Only one game left in this ranked grouping, show as single
+          groups.push({ type: 'single', game: activeGames[0] });
       }
+      
+      // If activeGames.length === 0, all games in this ranked series were excluded.
+      // We also need to check if any games from structuralSeriesCandidates that were NOT in rankedSeriesGames are still active.
+      // These should be processed as singles in subsequent iterations, but we marked them as processed.
+      // FIX: Only mark members of the rankedSeriesGames as processed if we want them to stay together.
+      // Actually, if a game was structurally in a series but rank-wise far away, it should have been 
+      // its own single or part of another series. 
+      // To be safe, we re-evaluate games that were in structuralSeriesCandidates but NOT in rankedSeriesGames.
+      
+      structuralSeriesCandidates.forEach(c => {
+          if (!rankedSeriesGames.some(rg => rg.id === c.id)) {
+              processedGameIds.delete(c.id); // Allow them to be processed again
+          }
+      });
   });
   
   // Final sort of groups by their highest rank

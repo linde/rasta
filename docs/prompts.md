@@ -43,7 +43,7 @@ please remove the "at ..." text in the opponents, if it exists.
 ```
 
 ```
-for series, please dont display them in a drop down.  display the min and max dates in a range (ie "Mar 13, 2026" and "Mar 14, 2026" and "Mar 16, 2026" would be "Mar 13-16, 2026"). in the parenthesis where the time is, please put the month/date without the year).  Also please put an abbrev day of the week in the leftmost date field.
+for series, please dont display them in a drop down.  display the min and max dates in a range (ie "Mar 13, 2026" and "Mar 14, 2026" and "Mar 16, 2026" would be "Mar 13-16, 2026"). in the parenthesis where the time is, please put the month/date without the year.  Also please put an abbrev day of the week in the leftmost date field.
 ```
 
 ```
@@ -67,8 +67,8 @@ please make a npm script to compile the app into a dist directory. please exclud
 ```
 
 ```
-when i run the local server via `python -m http.server --port 8080` and dont specify the base directory then load localhost:8080/dist/ in the browser i am getting 404s becasue the app expects to be in the root director.  please make it work within a subdirectory
-``
+when i run the local server via "python -m http.server --port 8080" and dont specify the base directory then load localhost:8080/dist/ in the browser i am getting 404s becasue the app expects to be in the root directory.  please make it work within a subdirectory
+```
 
 ```
 settings needs to keep the existing ranking preferences from the previous screen. 
@@ -82,7 +82,19 @@ in the ranking preferences, please have a reset icon to reset to zero for all th
 please add a feature to have a little grey delete "x" that removes the entry manually from the list.  the x should not appear in the clipboard content. it should appear at the end of the row.  for multi-game series, replace the [x] button with a "expand" button that shows the games in the series in rows and have the 'x" button for each so they can individually be excluded from the series.  collect the exclusions in a section called "Exclusions" below the final list of Ranked Games
 ```
 
+```
+please change the rankings to be from 0 to 10 instead of -10 to 10.  any zero means add this game to the exclusions. please do this and add tests to cover 0 in each of the sections ( day of week, time, etc) results in the game appearning in exclusions 
+```
+
+```
+for each excluded game, please have an information icon (i)  that when you click, shows a popup of the games ranking cooeficients. this will help debug the ranking and tune prefs from the user 
+```
+
 # Backlog
+
+```
+allow the storing of non-5 set prefs in browser storage so they can be retained/loaded.
+```
 
 
 ```

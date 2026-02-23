@@ -1,2 +1,3 @@
 # Ignore the build output directory for the rasta-app
 /rasta-app/dist/
+rasta-app/cypress/screenshots/

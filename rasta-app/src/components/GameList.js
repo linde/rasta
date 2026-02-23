@@ -34,74 +34,73 @@ const GameList = ({ allRankedGames, onExcludeGame, excludedGameIds }) => {
 
 
   return (
-    <article>
-      <header>
-        <h3>Ranked Games</h3>
+    <article style={{ padding: '1rem' }}>
+      <header style={{ marginBottom: '1rem' }}>
+        <h3 style={{ margin: 0 }}>Ranked Games</h3>
       </header>
       {groupedGames.length === 0 && <p>No games to display after ranking.</p>}
-      {groupedGames.map((group) => (
-        <div key={group.type === 'single' ? group.game.id : group.key} style={{ marginBottom: '1rem' }}>
-          {group.type === 'single' ? (
-            <div className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <p style={{ margin: 0 }}>
-                <strong>{moment(group.game.gameDate).format('MMM DD, YYYY')}</strong> •{" "}
-                {group.game.opponent} at {group.game.location}{" "}
-                <span style={{ fontSize: '0.6em' }}>
-                  ({moment(group.game.gameDate).format('ddd MM/DD')} @ {moment(group.game.timeString, ["h:mm A", "H:mm"]).format('hh:mm')})
-                </span>
-              </p>
-              <button 
-                onClick={() => onExcludeGame(group.game.id)} 
-                className="secondary outline" 
-                style={{ marginLeft: '1rem', padding: '0.2rem 0.5rem', border: 'none' }}
-              >
-                <DeleteIcon />
-              </button>
-            </div>
-          ) : (
-            <div className="card">
+      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+        {groupedGames.map((group) => (
+          <li key={group.type === 'single' ? group.game.id : group.key} style={{ marginBottom: '0.5rem', listStyle: 'none' }}>
+            {group.type === 'single' ? (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <p style={{ margin: 0 }}>
-                  <strong>{group.formattedDateRangeMain}</strong> •{" "}
-                  {group.opponent} at {group.location}{" "}
+                  {moment(group.game.gameDate).format('MMM DD, YYYY')} • {group.game.opponent} at {group.game.location}{" "}
                   <span style={{ fontSize: '0.6em' }}>
-                    ({group.seriesParenthesis})
+                    ({moment(group.game.gameDate).format('ddd MM/DD')} @ {moment(group.game.timeString, ["h:mm A", "H:mm"]).format('hh:mm')})
                   </span>
                 </p>
                 <button 
-                  onClick={() => toggleSeriesExpansion(group.key)} 
+                  onClick={() => onExcludeGame(group.game.id)} 
                   className="secondary outline" 
-                  style={{ marginLeft: '1rem', padding: '0.2rem 0.5rem', border: 'none' }}
+                  style={{ marginLeft: '1rem', padding: '0.2rem 0.5rem', border: 'none', height: 'auto', width: 'auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                 >
-                  <ExpandIcon expanded={expandedSeries[group.key]} />
+                  <DeleteIcon />
                 </button>
               </div>
-              {expandedSeries[group.key] && (
-                <ul style={{ listStyle: 'none', paddingLeft: '1rem', marginTop: '0.5rem' }}>
-                  {group.games.map(game => (
-                    <li key={game.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.2rem' }}>
-                      <p style={{ margin: 0, fontSize: '0.9em' }}>
-                        {moment(game.gameDate).format('MMM DD, YYYY')} •{" "}
-                        {game.opponent} at {game.location}{" "}
-                        <span style={{ fontSize: '0.6em' }}>
-                          ({moment(game.gameDate).format('ddd MM/DD')} @ {moment(game.timeString, ["h:mm A", "H:mm"]).format('hh:mm')})
-                        </span>
-                      </p>
-                      <button 
-                        onClick={() => onExcludeGame(game.id)} 
-                        className="secondary outline" 
-                        style={{ marginLeft: '1rem', padding: '0.2rem 0.5rem', border: 'none' }}
-                      >
-                        <DeleteIcon />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-        </div>
-      ))}
+            ) : (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <p style={{ margin: 0 }}>
+                    {group.formattedDateRangeMain} • {group.opponent} at {group.location}{" "}
+                    <span style={{ fontSize: '0.6em' }}>
+                      ({group.seriesParenthesis})
+                    </span>
+                  </p>
+                  <button 
+                    onClick={() => toggleSeriesExpansion(group.key)} 
+                    className="secondary outline" 
+                    style={{ marginLeft: '1rem', padding: '0.2rem 0.5rem', border: 'none', height: 'auto', width: 'auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    <ExpandIcon expanded={expandedSeries[group.key]} />
+                  </button>
+                </div>
+                {expandedSeries[group.key] && (
+                  <ul style={{ listStyle: 'none', paddingLeft: '1.5rem', marginTop: '0.25rem', borderLeft: '2px solid var(--pico-muted-border-color)' }}>
+                    {group.games.map(game => (
+                      <li key={game.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem', listStyle: 'none' }}>
+                        <p style={{ margin: 0, fontSize: '0.9em' }}>
+                          {moment(game.gameDate).format('MMM DD, YYYY')} • {game.opponent} at {game.location}{" "}
+                          <span style={{ fontSize: '0.6em' }}>
+                            ({moment(game.gameDate).format('ddd MM/DD')} @ {moment(game.timeString, ["h:mm A", "H:mm"]).format('hh:mm')})
+                          </span>
+                        </p>
+                        <button 
+                          onClick={() => onExcludeGame(game.id)} 
+                          className="secondary outline" 
+                          style={{ marginLeft: '1rem', padding: '0.2rem 0.5rem', border: 'none', height: 'auto', width: 'auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                          <DeleteIcon />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
     </article>
   );
 };

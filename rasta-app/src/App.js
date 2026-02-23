@@ -17,6 +17,8 @@ function App() {
   const [showRankingForm, setShowRankingForm] = useState(false);
   const [shareMessage, setShareMessage] = useState(''); 
   const [excludedGameIds, setExcludedGameIds] = useState([]); 
+  const [manuallyRestoredIds, setManuallyRestoredIds] = useState([]); 
+  const [selectedGameForInfo, setSelectedGameForInfo] = useState(null); // State for info popup
 
   // Function to reset all relevant state to initial values
   const handleResetApp = useCallback((event) => {
@@ -30,6 +32,8 @@ function App() {
     setShowRankingForm(false);
     setShareMessage('');
     setExcludedGameIds([]); 
+    setManuallyRestoredIds([]);
+    setSelectedGameForInfo(null);
   }, []); 
 
   // Handlers for state updates
@@ -41,6 +45,8 @@ function App() {
     setShowRankingForm(false);
     setShareMessage('');
     setExcludedGameIds([]); 
+    setManuallyRestoredIds([]);
+    setSelectedGameForInfo(null);
     
     // Auto-mapping logic
     if (data && data.length > 0) {
@@ -75,6 +81,7 @@ function App() {
     setShowRankingForm(true);
     setShareMessage('');
     setExcludedGameIds([]); 
+    setManuallyRestoredIds([]);
   };
 
   const handleRankingComplete = (preferences) => {
@@ -92,12 +99,42 @@ function App() {
   const handleExcludeGame = useCallback((gameId) => {
     setExcludedGameIds(prevIds => {
       if (prevIds.includes(gameId)) {
+        setManuallyRestoredIds(prev => [...prev, gameId]);
         return prevIds.filter(id => id !== gameId); 
       } else {
+        setManuallyRestoredIds(prev => prev.filter(id => id !== gameId));
         return [...prevIds, gameId]; 
       }
     });
   }, []);
+
+  // Effect to handle automatic exclusions based on zero preferences
+  useEffect(() => {
+    if (processedGames && rankingPreferences) {
+      const newExcludedIds = new Set(excludedGameIds);
+      let changed = false;
+
+      processedGames.forEach(game => {
+        const isZeroLocation = rankingPreferences[`location-${game.location}`] === 0;
+        const isZeroMonth = rankingPreferences[`gameMonth-${game.gameMonth}`] === 0;
+        const isZeroDay = rankingPreferences[`dayOfWeek-${game.dayOfWeek}`] === 0;
+        const isZeroTime = rankingPreferences[`timeBucket-${game.timeBucket}`] === 0;
+        const isZeroMidweek = rankingPreferences[`midweekDayGame-${game.midweekDayGame}`] === 0;
+        const isZeroOpponent = rankingPreferences[`opponent-${game.opponent}`] === 0;
+
+        if (isZeroLocation || isZeroMonth || isZeroDay || isZeroTime || isZeroMidweek || isZeroOpponent) {
+          if (!newExcludedIds.has(game.id) && !manuallyRestoredIds.includes(game.id)) {
+            newExcludedIds.add(game.id);
+            changed = true;
+          }
+        }
+      });
+
+      if (changed) {
+        setExcludedGameIds(Array.from(newExcludedIds));
+      }
+    }
+  }, [processedGames, rankingPreferences, manuallyRestoredIds, excludedGameIds]);
 
   // Generate shareable text from grouped ranked games
   const generateShareText = () => {
@@ -114,7 +151,6 @@ function App() {
             const formattedTime = moment(group.game.timeString, ["h:mm A", "H:mm"]).format('hh:mm A');
             shareText += `${index + 1}. ${gameDate.format('MMM DD, YYYY')} • ${group.game.opponent} at ${group.game.location} (${gameDate.format('ddd MM/DD')} @ ${formattedTime})\n`;
         } else {
-            // Series
             shareText += `${index + 1}. ${group.formattedDateRangeMain} • ${group.opponent} at ${group.location} (${group.seriesParenthesis})\n`;
         }
     });
@@ -231,7 +267,6 @@ function App() {
           </li>
         </ul>
         <ul>
-          {/* Show Share and Settings buttons only if there's data to rank */}
           {csvData && columnMappings && processedGames && uniqueRankingAttributes && rankedGames && (
             <>
               <li>
@@ -247,7 +282,7 @@ function App() {
                 <button onClick={toggleRankingForm} className="secondary">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: 'middle' }}>
                     <circle cx="12" cy="12" r="3"></circle>
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0 .33 1.82H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 1 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0 .33 1.82H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                   </svg>
                 </button>
               </li>
@@ -272,6 +307,69 @@ function App() {
           {shareMessage}
         </div>
       )}
+
+      {/* Info Popup Modal */}
+      {selectedGameForInfo && (
+        <dialog open>
+          <article>
+            <header>
+              <button aria-label="Close" rel="prev" onClick={() => setSelectedGameForInfo(null)}></button>
+              <h3>Ranking Coefficients</h3>
+              <p style={{ margin: 0, fontSize: '0.9em' }}>
+                {moment(selectedGameForInfo.gameDate).format('MMM DD, YYYY')} • {selectedGameForInfo.opponent} at {selectedGameForInfo.location}
+              </p>
+            </header>
+            <table className="striped">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Value</th>
+                  <th>Coefficient (Score)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Location</td>
+                  <td>{selectedGameForInfo.location}</td>
+                  <td>{rankingPreferences[`location-${selectedGameForInfo.location}`] || 0}</td>
+                </tr>
+                <tr>
+                  <td>Month</td>
+                  <td>{selectedGameForInfo.gameMonth}</td>
+                  <td>{rankingPreferences[`gameMonth-${selectedGameForInfo.gameMonth}`] || 0}</td>
+                </tr>
+                <tr>
+                  <td>Day of Week</td>
+                  <td>{selectedGameForInfo.dayOfWeek}</td>
+                  <td>{rankingPreferences[`dayOfWeek-${selectedGameForInfo.dayOfWeek}`] || 0}</td>
+                </tr>
+                <tr>
+                  <td>Game Time</td>
+                  <td>{selectedGameForInfo.timeBucket}</td>
+                  <td>{rankingPreferences[`timeBucket-${selectedGameForInfo.timeBucket}`] || 0}</td>
+                </tr>
+                <tr>
+                  <td>Mid-week Day</td>
+                  <td>{selectedGameForInfo.midweekDayGame ? 'Yes' : 'No'}</td>
+                  <td>{rankingPreferences[`midweekDayGame-${selectedGameForInfo.midweekDayGame}`] || 0}</td>
+                </tr>
+                <tr>
+                  <td>Opponent</td>
+                  <td>{selectedGameForInfo.opponent}</td>
+                  <td>{rankingPreferences[`opponent-${selectedGameForInfo.opponent}`] || 0}</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th colSpan="2">Total Score</th>
+                  <th>{selectedGameForInfo.score}</th>
+                </tr>
+              </tfoot>
+            </table>
+          </article>
+        </dialog>
+      )}
+
       <article>
         {!csvData ? (
           <FileUpload onFileUpload={handleFileUpload} />
@@ -306,20 +404,41 @@ function App() {
           </header>
           <ul style={{ listStyle: 'none', padding: 0 }}>
             {excludedGameIds.map(id => {
-              const game = rankedGames?.find(g => g.id === id); 
-              if (!game) return null;
+              const game = processedGames?.find(g => g.id === id); // Use processedGames to get the latest scores/data
+              // Note: rankedGames might be outdated if we just changed preferences, 
+              // but generateRanking updated rankedGames state in the second useEffect.
+              // To be safe, we'll try to find it in rankedGames first to get the current score.
+              const currentRankedGame = rankedGames?.find(g => g.id === id) || game;
+              
+              if (!currentRankedGame) return null;
               return (
                 <li key={id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                   <p style={{ margin: 0 }}>
-                    {moment(game.gameDate).format('MMM DD, YYYY')} • {game.opponent} at {game.location}
+                    {moment(currentRankedGame.gameDate).format('MMM DD, YYYY')} • {currentRankedGame.opponent} at {currentRankedGame.location}{" "}
+                    <span style={{ fontSize: '0.6em' }}>
+                      ({moment(currentRankedGame.gameDate).format('ddd MM/DD')} @ {moment(currentRankedGame.timeString, ["h:mm A", "H:mm"]).format('hh:mm')})
+                    </span>
                   </p>
-                  <button 
-                    onClick={() => handleExcludeGame(id)} 
-                    className="secondary outline" 
-                    style={{ marginLeft: '1rem', padding: '0.2rem 0.5rem', border: 'none', height: 'auto', width: 'auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-                  >
-                    <span style={{ fontSize: '1.2rem', fontWeight: 'bold', lineHeight: 1 }}>⟲</span>
-                  </button>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button 
+                      onClick={() => setSelectedGameForInfo(currentRankedGame)} 
+                      className="secondary outline" 
+                      style={{ padding: '0.4rem', border: 'none', height: 'auto', width: 'auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--pico-color)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: 'middle' }}>
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                      </svg>
+                    </button>
+                    <button 
+                      onClick={() => handleExcludeGame(id)} 
+                      className="secondary outline" 
+                      style={{ padding: '0.2rem 0.5rem', border: 'none', height: 'auto', width: 'auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      <span style={{ fontSize: '1.2rem', fontWeight: 'bold', lineHeight: 1 }}>⟲</span>
+                    </button>
+                  </div>
                 </li>
               );
             })}

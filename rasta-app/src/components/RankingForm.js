@@ -3,28 +3,28 @@ import React, { useState, useEffect, useCallback } from 'react';
 function RankingForm({ uniqueRankingAttributes, onRankingComplete, initialPreferences }) {
   const [preferences, setPreferences] = useState({});
 
-  // Function to generate default (zero) preferences
+  // Function to generate default (now 5) preferences
   const generateDefaultPreferences = useCallback(() => {
     const defaultPrefs = {};
 
     uniqueRankingAttributes.locations.forEach(location => {
-      defaultPrefs[`location-${location}`] = 0;
+      defaultPrefs[`location-${location}`] = 5;
     });
     // Add Game Month preferences
     uniqueRankingAttributes.gameMonths.forEach(month => {
-      defaultPrefs[`gameMonth-${month}`] = 0;
+      defaultPrefs[`gameMonth-${month}`] = 5;
     });
     // Add Day of Week preferences
     uniqueRankingAttributes.daysOfWeek.forEach(day => {
-      defaultPrefs[`dayOfWeek-${day}`] = 0;
+      defaultPrefs[`dayOfWeek-${day}`] = 5;
     });
     uniqueRankingAttributes.timeBuckets.forEach(bucket => {
-      defaultPrefs[`timeBucket-${bucket}`] = 0;
+      defaultPrefs[`timeBucket-${bucket}`] = 5;
     });
-    defaultPrefs['midweekDayGame-true'] = 0;
-    defaultPrefs['midweekDayGame-false'] = 0;
+    defaultPrefs['midweekDayGame-true'] = 5;
+    defaultPrefs['midweekDayGame-false'] = 5;
     uniqueRankingAttributes.opponents.forEach(opponent => {
-      defaultPrefs[`opponent-${opponent}`] = 0;
+      defaultPrefs[`opponent-${opponent}`] = 5;
     });
     return defaultPrefs;
   }, [uniqueRankingAttributes]);
@@ -32,25 +32,25 @@ function RankingForm({ uniqueRankingAttributes, onRankingComplete, initialPrefer
   useEffect(() => {
     const newInitialPreferences = {};
 
-    // Initialize with provided initialPreferences if they exist, otherwise default to 0
+    // Initialize with provided initialPreferences if they exist, otherwise default to 5
     uniqueRankingAttributes.locations.forEach(location => {
-      newInitialPreferences[`location-${location}`] = initialPreferences?.[`location-${location}`] || 0;
+      newInitialPreferences[`location-${location}`] = initialPreferences?.[`location-${location}`] ?? 5;
     });
     // Initialize Game Month preferences
     uniqueRankingAttributes.gameMonths.forEach(month => {
-      newInitialPreferences[`gameMonth-${month}`] = initialPreferences?.[`gameMonth-${month}`] || 0;
+      newInitialPreferences[`gameMonth-${month}`] = initialPreferences?.[`gameMonth-${month}`] ?? 5;
     });
     // Initialize Day of Week preferences
     uniqueRankingAttributes.daysOfWeek.forEach(day => {
-      newInitialPreferences[`dayOfWeek-${day}`] = initialPreferences?.[`dayOfWeek-${day}`] || 0;
+      newInitialPreferences[`dayOfWeek-${day}`] = initialPreferences?.[`dayOfWeek-${day}`] ?? 5;
     });
     uniqueRankingAttributes.timeBuckets.forEach(bucket => {
-      newInitialPreferences[`timeBucket-${bucket}`] = initialPreferences?.[`timeBucket-${bucket}`] || 0;
+      newInitialPreferences[`timeBucket-${bucket}`] = initialPreferences?.[`timeBucket-${bucket}`] ?? 5;
     });
-    newInitialPreferences['midweekDayGame-true'] = initialPreferences?.['midweekDayGame-true'] || 0;
-    newInitialPreferences['midweekDayGame-false'] = initialPreferences?.['midweekDayGame-false'] || 0;
+    newInitialPreferences['midweekDayGame-true'] = initialPreferences?.['midweekDayGame-true'] ?? 5;
+    newInitialPreferences['midweekDayGame-false'] = initialPreferences?.['midweekDayGame-false'] ?? 5;
     uniqueRankingAttributes.opponents.forEach(opponent => {
-      newInitialPreferences[`opponent-${opponent}`] = initialPreferences?.[`opponent-${opponent}`] || 0;
+      newInitialPreferences[`opponent-${opponent}`] = initialPreferences?.[`opponent-${opponent}`] ?? 5;
     });
 
     setPreferences(newInitialPreferences);
@@ -59,14 +59,13 @@ function RankingForm({ uniqueRankingAttributes, onRankingComplete, initialPrefer
   const handlePreferenceChange = (key, value) => {
     setPreferences(prevPreferences => ({
       ...prevPreferences,
-      [key]: parseInt(value, 10), // Ensure value is a number
+      [key]: parseInt(value, 10), 
     }));
   };
 
   const handleReset = () => {
     const defaultPrefs = generateDefaultPreferences();
     setPreferences(defaultPrefs);
-    // onRankingComplete(defaultPrefs); // No longer notify parent on reset
   };
 
   const handleSubmit = (event) => {
@@ -79,7 +78,7 @@ function RankingForm({ uniqueRankingAttributes, onRankingComplete, initialPrefer
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3>Set Ranking Preferences</h3>
         <button onClick={handleReset} className="secondary" style={{ width: 'auto', padding: '0.5rem' }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--pico-color)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="1 4 1 10 7 10"></polyline>
             <polyline points="23 20 23 14 17 14"></polyline>
             <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
@@ -94,16 +93,15 @@ function RankingForm({ uniqueRankingAttributes, onRankingComplete, initialPrefer
             <input
               type="range"
               id={`location-${location}`}
-              min="-10"
+              min="0"
               max="10"
-              value={preferences[`location-${location}`] || 0}
+              value={preferences[`location-${location}`] ?? 5}
               onChange={(e) => handlePreferenceChange(`location-${location}`, e.target.value)}
             />
-            <span>{preferences[`location-${location}`] || 0}</span>
+            <span>{preferences[`location-${location}`] ?? 5}</span>
           </div>
         ))}
 
-        {/* Game Month section */}
         <h4 style={{ marginTop: '2rem', marginBottom: '1rem' }}>Game Month</h4>
         {uniqueRankingAttributes.gameMonths.map(month => (
           <div key={`gameMonth-${month}`} className="grid">
@@ -111,16 +109,15 @@ function RankingForm({ uniqueRankingAttributes, onRankingComplete, initialPrefer
             <input
               type="range"
               id={`gameMonth-${month}`}
-              min="-10"
+              min="0"
               max="10"
-              value={preferences[`gameMonth-${month}`] || 0}
+              value={preferences[`gameMonth-${month}`] ?? 5}
               onChange={(e) => handlePreferenceChange(`gameMonth-${month}`, e.target.value)}
             />
-            <span>{preferences[`gameMonth-${month}`] || 0}</span>
+            <span>{preferences[`gameMonth-${month}`] ?? 5}</span>
           </div>
         ))}
 
-        {/* Day of Week section */}
         <h4 style={{ marginTop: '2rem', marginBottom: '1rem' }}>Day of Week</h4>
         {uniqueRankingAttributes.daysOfWeek.map(day => (
           <div key={`dayOfWeek-${day}`} className="grid">
@@ -128,12 +125,12 @@ function RankingForm({ uniqueRankingAttributes, onRankingComplete, initialPrefer
             <input
               type="range"
               id={`dayOfWeek-${day}`}
-              min="-10"
+              min="0"
               max="10"
-              value={preferences[`dayOfWeek-${day}`] || 0}
+              value={preferences[`dayOfWeek-${day}`] ?? 5}
               onChange={(e) => handlePreferenceChange(`dayOfWeek-${day}`, e.target.value)}
             />
-            <span>{preferences[`dayOfWeek-${day}`] || 0}</span>
+            <span>{preferences[`dayOfWeek-${day}`] ?? 5}</span>
           </div>
         ))}
 
@@ -144,12 +141,12 @@ function RankingForm({ uniqueRankingAttributes, onRankingComplete, initialPrefer
             <input
               type="range"
               id={`timeBucket-${bucket}`}
-              min="-10"
+              min="0"
               max="10"
-              value={preferences[`timeBucket-${bucket}`] || 0}
+              value={preferences[`timeBucket-${bucket}`] ?? 5}
               onChange={(e) => handlePreferenceChange(`timeBucket-${bucket}`, e.target.value)}
             />
-            <span>{preferences[`timeBucket-${bucket}`] || 0}</span>
+            <span>{preferences[`timeBucket-${bucket}`] ?? 5}</span>
           </div>
         ))}
 
@@ -159,24 +156,24 @@ function RankingForm({ uniqueRankingAttributes, onRankingComplete, initialPrefer
           <input
             type="range"
             id="midweekDayGame-true"
-            min="-10"
+            min="0"
             max="10"
-            value={preferences['midweekDayGame-true'] || 0}
+            value={preferences['midweekDayGame-true'] ?? 5}
             onChange={(e) => handlePreferenceChange('midweekDayGame-true', e.target.value)}
           />
-          <span>{preferences['midweekDayGame-true'] || 0}</span>
+          <span>{preferences['midweekDayGame-true'] ?? 5}</span>
         </div>
         <div className="grid">
           <label htmlFor="midweekDayGame-false">No</label>
           <input
             type="range"
             id="midweekDayGame-false"
-            min="-10"
+            min="0"
             max="10"
-            value={preferences['midweekDayGame-false'] || 0}
+            value={preferences['midweekDayGame-false'] ?? 5}
             onChange={(e) => handlePreferenceChange('midweekDayGame-false', e.target.value)}
           />
-          <span>{preferences['midweekDayGame-false'] || 0}</span>
+          <span>{preferences['midweekDayGame-false'] ?? 5}</span>
         </div>
 
         <h4 style={{ marginTop: '2rem', marginBottom: '1rem' }}>Opponents</h4>
@@ -186,12 +183,12 @@ function RankingForm({ uniqueRankingAttributes, onRankingComplete, initialPrefer
             <input
               type="range"
               id={`opponent-${opponent}`}
-              min="-10"
+              min="0"
               max="10"
-              value={preferences[`opponent-${opponent}`] || 0}
+              value={preferences[`opponent-${opponent}`] ?? 5}
               onChange={(e) => handlePreferenceChange(`opponent-${opponent}`, e.target.value)}
             />
-            <span>{preferences[`opponent-${opponent}`] || 0}</span>
+            <span>{preferences[`opponent-${opponent}`] ?? 5}</span>
           </div>
         ))}
         
