@@ -14,8 +14,10 @@ describe('Example CSV Flow', () => {
     // 3. Interact with the RankingForm
     cy.contains('h4', 'Locations').should('be.visible');
     // Set a preference for Oracle Park
+    // We target the range input within the same flex row as the label
     cy.contains('label', 'Oracle Park - San Francisco')
-      .siblings('input[type="range"]')
+      .parent()
+      .find('input[type="range"]')
       .invoke('val', 10) // Set the range slider value
       .trigger('change');
 
@@ -25,7 +27,7 @@ describe('Example CSV Flow', () => {
     // 5. Verify that the GameList is displayed
     cy.contains('h3', 'Ranked Games').should('be.visible');
 
-    // Check for at least one ranked game card/details
-    cy.get('div.card, details').should('have.length.greaterThan', 0);
+    // Check for at least one ranked game list item
+    cy.get('article').contains('h3', 'Ranked Games').parents('article').find('li').should('have.length.greaterThan', 0);
   });
 });

@@ -73,6 +73,36 @@ function RankingForm({ uniqueRankingAttributes, onRankingComplete, initialPrefer
     onRankingComplete(preferences);
   };
 
+  // Common style for rows to prevent wrapping and reduce size
+  const rowStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem',
+    marginBottom: '0.75rem',
+    fontSize: '0.85rem',
+    flexWrap: 'nowrap'
+  };
+
+  const labelStyle = {
+    flex: '1',
+    margin: 0,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap'
+  };
+
+  const inputStyle = {
+    flex: '2',
+    margin: 0
+  };
+
+  const scoreStyle = {
+    width: '1.5rem',
+    textAlign: 'right',
+    color: 'var(--pico-muted-color)',
+    fontWeight: 'normal' // Changed from 'bold' to 'normal'
+  };
+
   return (
     <article>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -88,107 +118,114 @@ function RankingForm({ uniqueRankingAttributes, onRankingComplete, initialPrefer
       <form onSubmit={handleSubmit}>
         <h4 style={{ marginBottom: '1rem' }}>Locations</h4>
         {uniqueRankingAttributes.locations.map(location => (
-          <div key={`location-${location}`} className="grid">
-            <label htmlFor={`location-${location}`}>{location}</label>
+          <div key={`location-${location}`} style={rowStyle}>
+            <label htmlFor={`location-${location}`} style={labelStyle}>{location}</label>
             <input
               type="range"
               id={`location-${location}`}
               min="0"
               max="10"
+              style={inputStyle}
               value={preferences[`location-${location}`] ?? 5}
               onChange={(e) => handlePreferenceChange(`location-${location}`, e.target.value)}
             />
-            <span>{preferences[`location-${location}`] ?? 5}</span>
+            <span style={scoreStyle}>{preferences[`location-${location}`] ?? 5}</span>
           </div>
         ))}
 
         <h4 style={{ marginTop: '2rem', marginBottom: '1rem' }}>Game Month</h4>
         {uniqueRankingAttributes.gameMonths.map(month => (
-          <div key={`gameMonth-${month}`} className="grid">
-            <label htmlFor={`gameMonth-${month}`}>{month}</label>
+          <div key={`gameMonth-${month}`} style={rowStyle}>
+            <label htmlFor={`gameMonth-${month}`} style={labelStyle}>{month}</label>
             <input
               type="range"
               id={`gameMonth-${month}`}
               min="0"
               max="10"
+              style={inputStyle}
               value={preferences[`gameMonth-${month}`] ?? 5}
               onChange={(e) => handlePreferenceChange(`gameMonth-${month}`, e.target.value)}
             />
-            <span>{preferences[`gameMonth-${month}`] ?? 5}</span>
+            <span style={scoreStyle}>{preferences[`gameMonth-${month}`] ?? 5}</span>
           </div>
         ))}
 
         <h4 style={{ marginTop: '2rem', marginBottom: '1rem' }}>Day of Week</h4>
         {uniqueRankingAttributes.daysOfWeek.map(day => (
-          <div key={`dayOfWeek-${day}`} className="grid">
-            <label htmlFor={`dayOfWeek-${day}`}>{day}</label>
+          <div key={`dayOfWeek-${day}`} style={rowStyle}>
+            <label htmlFor={`dayOfWeek-${day}`} style={labelStyle}>{day}</label>
             <input
               type="range"
               id={`dayOfWeek-${day}`}
               min="0"
               max="10"
+              style={inputStyle}
               value={preferences[`dayOfWeek-${day}`] ?? 5}
               onChange={(e) => handlePreferenceChange(`dayOfWeek-${day}`, e.target.value)}
             />
-            <span>{preferences[`dayOfWeek-${day}`] ?? 5}</span>
+            <span style={scoreStyle}>{preferences[`dayOfWeek-${day}`] ?? 5}</span>
           </div>
         ))}
 
         <h4 style={{ marginTop: '2rem', marginBottom: '1rem' }}>Game Time</h4>
         {uniqueRankingAttributes.timeBuckets.map(bucket => (
-          <div key={`timeBucket-${bucket}`} className="grid">
-            <label htmlFor={`timeBucket-${bucket}`}>{bucket}</label>
+          <div key={`timeBucket-${bucket}`} style={rowStyle}>
+            <label htmlFor={`timeBucket-${bucket}`} style={labelStyle}>{bucket}</label>
             <input
               type="range"
               id={`timeBucket-${bucket}`}
               min="0"
               max="10"
+              style={inputStyle}
               value={preferences[`timeBucket-${bucket}`] ?? 5}
               onChange={(e) => handlePreferenceChange(`timeBucket-${bucket}`, e.target.value)}
             />
-            <span>{preferences[`timeBucket-${bucket}`] ?? 5}</span>
+            <span style={scoreStyle}>{preferences[`timeBucket-${bucket}`] ?? 5}</span>
           </div>
         ))}
 
         <h4 style={{ marginTop: '2rem', marginBottom: '1rem' }}>Mid-week Day Game</h4>
-        <div className="grid">
-          <label htmlFor="midweekDayGame-true">Yes</label>
+        <div style={rowStyle}>
+          <label htmlFor="midweekDayGame-true" style={labelStyle}>Yes</label>
           <input
             type="range"
             id="midweekDayGame-true"
             min="0"
             max="10"
+            style={inputStyle}
             value={preferences['midweekDayGame-true'] ?? 5}
             onChange={(e) => handlePreferenceChange('midweekDayGame-true', e.target.value)}
           />
-          <span>{preferences['midweekDayGame-true'] ?? 5}</span>
+          <span style={scoreStyle}>{preferences['midweekDayGame-true'] ?? 5}</span>
         </div>
-        <div className="grid">
-          <label htmlFor="midweekDayGame-false">No</label>
+        <div style={rowStyle}>
+          <label htmlFor="midweekDayGame-false" style={labelStyle}>No</label>
           <input
             type="range"
             id="midweekDayGame-false"
             min="0"
             max="10"
+            style={inputStyle}
             value={preferences['midweekDayGame-false'] ?? 5}
             onChange={(e) => handlePreferenceChange('midweekDayGame-false', e.target.value)}
           />
-          <span>{preferences['midweekDayGame-false'] ?? 5}</span>
+          <span style={scoreStyle}>{preferences['midweekDayGame-false'] ?? 5}</span>
         </div>
 
         <h4 style={{ marginTop: '2rem', marginBottom: '1rem' }}>Opponents</h4>
         {uniqueRankingAttributes.opponents.map(opponent => (
-          <div key={`opponent-${opponent}`} className="grid">
-            <label htmlFor={`opponent-${opponent}`}>{opponent}</label>
+          <div key={`opponent-${opponent}`} style={rowStyle}>
+            <label htmlFor={`opponent-${opponent}`} style={labelStyle}>{opponent}</label>
             <input
               type="range"
               id={`opponent-${opponent}`}
               min="0"
               max="10"
+              style={inputStyle}
               value={preferences[`opponent-${opponent}`] ?? 5}
               onChange={(e) => handlePreferenceChange(`opponent-${opponent}`, e.target.value)}
             />
-            <span>{preferences[`opponent-${opponent}`] ?? 5}</span>
+            <span style={scoreStyle}>{preferences[`opponent-${opponent}`] ?? 5}</span>
           </div>
         ))}
         
